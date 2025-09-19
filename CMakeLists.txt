@@ -13,8 +13,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG")
 endif()
 
-target_include_directories(hangman_exec PRIVATE include)
-
 add_subdirectory(src/hangman)
 
 add_executable(hangman_exec src/main.cpp)

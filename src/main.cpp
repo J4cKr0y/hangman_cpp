@@ -94,7 +94,7 @@ void displayHangman(int wrongGuesses) {
             std::cout << "   +----+\n";
             std::cout << "   |    |\n";
             std::cout << "   O    |\n";
-            std::cout << "  /|\   |\n";
+            std::cout << R"(  /|\ |)" << std::endl;
             std::cout << "        |\n";
             std::cout << "        |\n";
             std::cout << "=========\n";
@@ -103,7 +103,7 @@ void displayHangman(int wrongGuesses) {
             std::cout << "   +----+\n";
             std::cout << "   |    |\n";
             std::cout << "   O    |\n";
-            std::cout << "  /|\   |\n";
+            std::cout << R"(  /|\   |)" << std::endl;
             std::cout << "  /     |\n";
             std::cout << "        |\n";
             std::cout << "=========\n";
@@ -112,8 +112,8 @@ void displayHangman(int wrongGuesses) {
             std::cout << "   +----+\n";
             std::cout << "   |    |\n";
             std::cout << "   O    |\n";
-            std::cout << "  /|\   |\n";
-            std::cout << "  / \   |\n";
+            std::cout << R"(  /|\   |)" << std::endl;
+            std::cout << R"(  / \   |)" << std::endl;
             std::cout << "        |\n";
             std::cout << "=========\n";
             break;
@@ -215,7 +215,7 @@ int main() {
     std::cout << std::string(50, '=') << std::endl;
 
     if (game.hasWon()) {
-        std::cout << "\o/ FÉLICITATIONS ! Vous avez trouvé le mot : " << secretWord << std::endl;
+        std::cout << R"(\o/ FÉLICITATIONS ! Vous avez trouvé le mot : )" << secretWord << std::endl;
     } else {
         std::cout << "X PENDU ! Le mot était : " << secretWord << std::endl;
     }
