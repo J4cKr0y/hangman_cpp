@@ -443,3 +443,19 @@ Parsed CXX implicit link information from above output:
   implicit fwks: []
 
 
+Performing C++ SOURCE FILE Test HAVE_FLAG__ffile_prefix_map__home_jacky_Projects_hangman_cpp_build__deps_catch2_src__ succeeded with the following output:
+Change Dir: /home/jacky/Projects/hangman_cpp/build/CMakeFiles/CMakeScratch/TryCompile-nBAT5B
+
+Run Build Command(s):/usr/bin/gmake -f Makefile cmTC_9d617/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_9d617.dir/build.make CMakeFiles/cmTC_9d617.dir/build
+gmake[1]: Entering directory '/home/jacky/Projects/hangman_cpp/build/CMakeFiles/CMakeScratch/TryCompile-nBAT5B'
+Building CXX object CMakeFiles/cmTC_9d617.dir/src.cxx.o
+/usr/bin/c++ -DHAVE_FLAG__ffile_prefix_map__home_jacky_Projects_hangman_cpp_build__deps_catch2_src__  -ffile-prefix-map=/home/jacky/Projects/hangman_cpp/build/_deps/catch2-src/= -std=gnu++17 -o CMakeFiles/cmTC_9d617.dir/src.cxx.o -c /home/jacky/Projects/hangman_cpp/build/CMakeFiles/CMakeScratch/TryCompile-nBAT5B/src.cxx
+Linking CXX executable cmTC_9d617
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_9d617.dir/link.txt --verbose=1
+/usr/bin/c++ CMakeFiles/cmTC_9d617.dir/src.cxx.o -o cmTC_9d617 
+gmake[1]: Leaving directory '/home/jacky/Projects/hangman_cpp/build/CMakeFiles/CMakeScratch/TryCompile-nBAT5B'
+
+
+Source file was:
+int main() { return 0; }
+

@@ -65,6 +65,16 @@ CMAKE_BINARY_DIR = /home/jacky/Projects/hangman_cpp/build
 #=============================================================================
 # Targets provided globally by CMake.
 
+# Special rule for the target test
+test:
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running tests..."
+	/usr/bin/ctest --force-new-ctest-process $(ARGS)
+.PHONY : test
+
+# Special rule for the target test
+test/fast: test
+.PHONY : test/fast
+
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
@@ -130,6 +140,19 @@ hangman_exec/fast:
 .PHONY : hangman_exec/fast
 
 #=============================================================================
+# Target rules for targets named tests
+
+# Build rule for target.
+tests: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 tests
+.PHONY : tests
+
+# fast build rule for target.
+tests/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/build
+.PHONY : tests/fast
+
+#=============================================================================
 # Target rules for targets named hangman_lib
 
 # Build rule for target.
@@ -141,6 +164,32 @@ hangman_lib: cmake_check_build_system
 hangman_lib/fast:
 	$(MAKE) $(MAKESILENT) -f src/hangman/CMakeFiles/hangman_lib.dir/build.make src/hangman/CMakeFiles/hangman_lib.dir/build
 .PHONY : hangman_lib/fast
+
+#=============================================================================
+# Target rules for targets named Catch2
+
+# Build rule for target.
+Catch2: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Catch2
+.PHONY : Catch2
+
+# fast build rule for target.
+Catch2/fast:
+	$(MAKE) $(MAKESILENT) -f _deps/catch2-build/src/CMakeFiles/Catch2.dir/build.make _deps/catch2-build/src/CMakeFiles/Catch2.dir/build
+.PHONY : Catch2/fast
+
+#=============================================================================
+# Target rules for targets named Catch2WithMain
+
+# Build rule for target.
+Catch2WithMain: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 Catch2WithMain
+.PHONY : Catch2WithMain
+
+# fast build rule for target.
+Catch2WithMain/fast:
+	$(MAKE) $(MAKESILENT) -f _deps/catch2-build/src/CMakeFiles/Catch2WithMain.dir/build.make _deps/catch2-build/src/CMakeFiles/Catch2WithMain.dir/build
+.PHONY : Catch2WithMain/fast
 
 src/main.o: src/main.cpp.o
 .PHONY : src/main.o
@@ -166,6 +215,54 @@ src/main.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/hangman_exec.dir/build.make CMakeFiles/hangman_exec.dir/src/main.cpp.s
 .PHONY : src/main.cpp.s
 
+tests/test_hangman.o: tests/test_hangman.cpp.o
+.PHONY : tests/test_hangman.o
+
+# target to build an object file
+tests/test_hangman.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests/test_hangman.cpp.o
+.PHONY : tests/test_hangman.cpp.o
+
+tests/test_hangman.i: tests/test_hangman.cpp.i
+.PHONY : tests/test_hangman.i
+
+# target to preprocess a source file
+tests/test_hangman.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests/test_hangman.cpp.i
+.PHONY : tests/test_hangman.cpp.i
+
+tests/test_hangman.s: tests/test_hangman.cpp.s
+.PHONY : tests/test_hangman.s
+
+# target to generate assembly for a file
+tests/test_hangman.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests/test_hangman.cpp.s
+.PHONY : tests/test_hangman.cpp.s
+
+tests/test_integration.o: tests/test_integration.cpp.o
+.PHONY : tests/test_integration.o
+
+# target to build an object file
+tests/test_integration.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests/test_integration.cpp.o
+.PHONY : tests/test_integration.cpp.o
+
+tests/test_integration.i: tests/test_integration.cpp.i
+.PHONY : tests/test_integration.i
+
+# target to preprocess a source file
+tests/test_integration.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests/test_integration.cpp.i
+.PHONY : tests/test_integration.cpp.i
+
+tests/test_integration.s: tests/test_integration.cpp.s
+.PHONY : tests/test_integration.s
+
+# target to generate assembly for a file
+tests/test_integration.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/tests.dir/build.make CMakeFiles/tests.dir/tests/test_integration.cpp.s
+.PHONY : tests/test_integration.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -174,11 +271,21 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
+	@echo "... test"
+	@echo "... Catch2"
+	@echo "... Catch2WithMain"
 	@echo "... hangman_exec"
 	@echo "... hangman_lib"
+	@echo "... tests"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"
+	@echo "... tests/test_hangman.o"
+	@echo "... tests/test_hangman.i"
+	@echo "... tests/test_hangman.s"
+	@echo "... tests/test_integration.o"
+	@echo "... tests/test_integration.i"
+	@echo "... tests/test_integration.s"
 .PHONY : help
 
 

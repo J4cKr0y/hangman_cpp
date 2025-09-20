@@ -45,6 +45,7 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/jacky/Projects/hangman_cpp/build/src/hangman/cmake_install.cmake")
+  include("/home/jacky/Projects/hangman_cpp/build/_deps/catch2-build/cmake_install.cmake")
 
 endif()
 
