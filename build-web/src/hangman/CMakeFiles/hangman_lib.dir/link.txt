@@ -1,0 +1,2 @@
+/home/jacky/tools/emsdk/upstream/emscripten/emar qc libhangman_lib.a CMakeFiles/hangman_lib.dir/hangman.cpp.o
+/home/jacky/tools/emsdk/upstream/emscripten/emranlib libhangman_lib.a
