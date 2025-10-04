@@ -1253,9 +1253,11 @@ async function createWasm() {
             result = buf.slice(0, bytesRead).toString('utf-8');
           }
         } else
-        if (typeof window != 'undefined' &&
+
+       if (typeof window != 'undefined' && 
           typeof window.prompt == 'function') {
           // Browser.
+          setTimeout(() => {}, 100); // delay
           result = window.prompt('Input: ');  // returns null on cancel
           if (result !== null) {
             result += '\n';
