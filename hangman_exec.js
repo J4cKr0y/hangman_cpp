@@ -1257,7 +1257,8 @@ async function createWasm() {
        if (typeof window != 'undefined' && 
           typeof window.prompt == 'function') {
           // Browser.
-          setTimeout(() => {}, 100); // delay
+          document.body.offsetHeight; // force repaint
+          setTimeout(() => {}, 500); // delay
           result = window.prompt('Input: ');  // returns null on cancel
           if (result !== null) {
             result += '\n';
