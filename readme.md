@@ -33,37 +33,24 @@ Le Pendu est un jeu de lettres classique où le joueur doit deviner un mot myst�
 
 ## Architecture du Projet
 ------------------------
+```
 HangmanGame/
 ├── CMakeLists.txt              # Configuration CMake principale
-
 ├── src/
-
 │   ├── main.cpp                # Point d'entrée du programme
-
 │   └── hangman/
-
 │       ├── CMakeLists.txt      # Configuration de la bibliothèque
-
 │       └── hangman.cpp         # Implémentation de la logique métier
-
 ├── include/
-
 │   └── hangman/
-
 │       └── hangman.h           # Interface publique de la classe Hangman
-
 ├── data/
-
 │   └── dico.txt                # Dictionnaire de mots
-
 └── build/                      # Répertoire de compilation (généré)
-
     └── bin/
-
         ├── hangman_exec        # Exécutable final
-
         └── dico.txt            # Dictionnaire copié automatiquement
-
+```
 
 Cette architecture suit les principes de **séparation des responsabilités** :
 
