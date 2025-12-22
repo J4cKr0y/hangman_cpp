@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jeu du Pendu WASM</title>
+<style>
+body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; margin-top: 50px; }
+#game-container { border: 1px solid #ccc; padding: 20px; text-align: center; width: 400px; }
+#word-display { font-size: 2em; letter-spacing: 5px; margin-bottom: 20px; }
+#attempts-display { margin-bottom: 10px; }
+#guessed-letters-display { margin-bottom: 20px; color: #555; }
+#guess-input { width: 50px; padding: 5px; font-size: 1.2em; text-align: center; margin-right: 10px; }
+#guess-button, #restart-button { padding: 8px 15px; font-size: 1.1em; cursor: pointer; }
+#message { margin-top: 20px; font-weight: bold; color: blue; }
+.hangman-drawing { font-family: monospace; white-space: pre-wrap; font-size: 1.2em; line-height: 1.2; margin-bottom: 20px; }
+</style>
+</head>
+<body>
+<h1>Jeu du Pendu avec WebAssembly</h1>
+
+<div id="game-container">
+<div class="hangman-drawing" id="hangman-drawing">
+</div>
+<div id="word-display">_ _ _ _ _</div>
+<div id="attempts-display">Tentatives restantes: 6</div>
+<div id="guessed-letters-display">Lettres devinées:</div>
+<input type="text" id="guess-input" maxlength="1" onkeyup="this.value = this.value.toLowerCase();">
+<button id="guess-button">Deviner</button>
+<button id="restart-button" style="display: none;">Rejouer</button>
+
+<p id="message"></p>
+</div>
+
+<script>
+// Le module WASM sera chargé par Emscripten
+var Module = {
+onRuntimeInitialized: function() {
+console.log("WebAssembly Module initialized.");
+//setupGame();
+const initGame = Module.cwrap('initGame', null, ['string']); 
+initGame("ordinateur"); updateUI(); 
+}
+};
+</script>
+<script src="hangman_wasm.js"></script> 
+
+<script>
+const wordDisplay = document.getElementById('word-display');
+const attemptsDisplay = document.getElementById('attempts-display');
+const guessedLettersDisplay = document.getElementById('guessed-letters-display');
+const guessInput = document.getElementById('guess-input');
+const guessButton = document.getElementById('guess-button');
+const restartButton = document.getElementById('restart-button');
+const messageDisplay = document.getElementById('message');
+const hangmanDrawing = document.getElementById('hangman-drawing');
+
+const words = ["ordinateur", "programmation", "developpement", "console", "challenge", "interface", "pratique", "contrat"];
+let currentSecretWord = "";
+
+function drawHangmanWeb(attempts) {
+let drawing = "";
+switch (attempts) {
+case 6: drawing = `
+_____ 
+| |
+| 
+| 
+| 
+| 
+|______|`; break;
+case 5: drawing = `
+_____ 
+| |
+| O
+| 
+| 
+| 
+|______|`; break;
+case 4: drawing = `
+_____ 
+| |
+| O
+| |
+| 
+| 
+|______|`; break;
+case 3: drawing = `
+_____ 
+| |
+| O
+| /|
+| 
+| 
+|______|`; break;
+case 2: drawing = `
+_____ 
+| |
+| O
+| /|\\
+| 
+| 
+|______|`; break;
+case 1: drawing = `
+_____ 
+| |
+| O
+| /|\\
+| |
+| 
+|______|`; break;
+case 0: drawing = `
+_____ 
+| |
+| O
+| /|\\
+| |
+| / \\
+|______|`; break;
+default: drawing = `
+_____ 
+| |
+| 
+| 
+| 
+| 
+|______|`;
+}
+hangmanDrawing.textContent = drawing;
+}
+
+function updateUI() {
+wordDisplay.textContent = Module.cwrap('getCurrentDisplayWord', 'string', [])();
+attemptsDisplay.textContent = `Tentatives restantes: ${Module.cwrap('getRemainingAttempts', 'number', [])()}`;
+guessedLettersDisplay.textContent = `Lettres devinées: ${Module.cwrap('getGuessedLettersString', 'string', [])()}`;
+drawHangmanWeb(Module.cwrap('getRemainingAttempts', 'number', [])());
+
+if (Module.cwrap('isGameOver', 'number', [])()) {
+guessInput.disabled = true;
+guessButton.disabled = true;
+restartButton.style.display = 'inline-block';
+if (Module.cwrap('isWordGuessed', 'number', [])()) {
+messageDisplay.textContent = "FÉLICITATIONS ! Vous avez trouvé le mot !";
+messageDisplay.style.color = 'green';
+} else {
+messageDisplay.textContent = `DOMMAGE, vous avez été pendu. Le mot était : ${Module.cwrap('getSecretWord', 'string', [])()}`;
+messageDisplay.style.color = 'red';
+}
+} else {
+messageDisplay.textContent = "";
+messageDisplay.style.color = 'blue';
+}
+}
+
+function handleGuess() {
+const guess = guessInput.value;
+guessInput.value = '';
+
+if (!guess || !/[a-z]/.test(guess)) {
+messageDisplay.textContent = "Veuillez entrer une lettre valide (a-z).";
+return;
+}
+
+// Appeler la fonction C++ via WASM
+const found = Module.cwrap('guessLetter', 'number', ['number'])(guess.charCodeAt(0));
+updateUI();
+}
+
+function setupGame() {
+guessInput.disabled = false;
+guessButton.disabled = false;
+restartButton.style.display = 'none';
+messageDisplay.textContent = "";
+
+currentSecretWord = words[Math.floor(Math.random() * words.length)];
+// Appeler la fonction C++ pour initialiser le jeu
+Module.cwrap('initGame', null, ['string'])(currentSecretWord);
+updateUI();
+}
+
+guessButton.addEventListener('click', handleGuess);
+guessInput.addEventListener('keypress', function(event) {
+if (event.key === 'Enter') {
+handleGuess();
+}
+});
+restartButton.addEventListener('click', setupGame);
+
+// Nettoyage à la fermeture de la page (important pour les singletons en C++)
+window.addEventListener('beforeunload', () => {
+if (Module && Module.cwrap('cleanup', null, [])) {
+Module.cwrap('cleanup', null, [])();
+}
+});
+</script>
+</body>
+</html>

@@ -1,226 +1,175 @@
+#include <ncurses.h>
 #include <iostream>
 #include <string>
 #include <vector>
 #include <fstream>
-#include <cstdlib>
-#include <ctime>
-#include <algorithm>
-#include <cctype>
-#include "hangman/hangman.h"
+#include <cstdlib> 
+#include <ctime>   
+#include <limits>  
+#include <set>     
 
+#include "hangman/hangman.h" 
 
+// Fonctions utilitaires
 std::string chooseRandomWord(const std::string& filename) {
     std::vector<std::string> words;
     std::ifstream file(filename);
-    std::string word;
-
     if (!file.is_open()) {
-        std::cerr << "Erreur: Impossible d'ouvrir le fichier " << filename << std::endl;
-        std::cerr << "Utilisation d'un mot par défaut..." << std::endl;
-        return "programmation";
+        mvprintw(LINES / 2, (COLS - 30) / 2, "Erreur: dico.txt introuvable!");
+        refresh();
+        getch(); // Attendre une touche
+        endwin();
+        exit(1);
     }
-
-    while (std::getline(file, word)) {
-        word.erase(0, word.find_first_not_of(" \t\r\n"));
-        word.erase(word.find_last_not_of(" \t\r\n") + 1);
-
-        if (!word.empty()) {
+    std::string word;
+    while (file >> word) {
+        if (word.length() > 2) { // Minimum 3 lettres pour le pendu
             words.push_back(word);
         }
     }
-
     file.close();
 
     if (words.empty()) {
-        std::cerr << "Erreur: Le fichier ne contient aucun mot valide." << std::endl;
-        std::cerr << "Utilisation d'un mot par défaut..." << std::endl;
-        return "programmation";
+        mvprintw(LINES / 2, (COLS - 30) / 2, "Erreur: Dictionnaire vide ou mots trop courts!");
+        refresh();
+        getch();
+        endwin();
+        exit(1);
     }
 
-    std::srand(static_cast<unsigned int>(std::time(nullptr)));
-
-    int randomIndex = std::rand() % words.size();
-    return words[randomIndex];
+    srand(time(0));
+    return words[rand() % words.size()];
 }
 
-void clearScreen() {
-#ifdef _WIN32
-    system("cls");
-#else
-    system("clear");
-#endif
-}
-
-void displayHangman(int wrongGuesses) {
-    std::cout << "\n";
-    switch (wrongGuesses) {
-        case 0:
-            std::cout << "   +----+\n";
-            std::cout << "   |    |\n";
-            std::cout << "        |\n";
-            std::cout << "        |\n";
-            std::cout << "        |\n";
-            std::cout << "        |\n";
-            std::cout << "=========\n";
-            break;
-        case 1:
-            std::cout << "   +----+\n";
-            std::cout << "   |    |\n";
-            std::cout << "   O    |\n";
-            std::cout << "        |\n";
-            std::cout << "        |\n";
-            std::cout << "        |\n";
-            std::cout << "=========\n";
-            break;
-        case 2:
-            std::cout << "   +----+\n";
-            std::cout << "   |    |\n";
-            std::cout << "   O    |\n";
-            std::cout << "   |    |\n";
-            std::cout << "        |\n";
-            std::cout << "        |\n";
-            std::cout << "=========\n";
-            break;
-        case 3:
-            std::cout << "   +----+\n";
-            std::cout << "   |    |\n";
-            std::cout << "   O    |\n";
-            std::cout << "  /|    |\n";
-            std::cout << "        |\n";
-            std::cout << "        |\n";
-            std::cout << "=========\n";
-            break;
-        case 4:
-            std::cout << "   +----+\n";
-            std::cout << "   |    |\n";
-            std::cout << "   O    |\n";
-            std::cout << R"(  /|\ |)" << std::endl;
-            std::cout << "        |\n";
-            std::cout << "        |\n";
-            std::cout << "=========\n";
-            break;
-        case 5:
-            std::cout << "   +----+\n";
-            std::cout << "   |    |\n";
-            std::cout << "   O    |\n";
-            std::cout << R"(  /|\   |)" << std::endl;
-            std::cout << "  /     |\n";
-            std::cout << "        |\n";
-            std::cout << "=========\n";
-            break;
-        case 6:
-            std::cout << "   +----+\n";
-            std::cout << "   |    |\n";
-            std::cout << "   O    |\n";
-            std::cout << R"(  /|\   |)" << std::endl;
-            std::cout << R"(  / \   |)" << std::endl;
-            std::cout << "        |\n";
-            std::cout << "=========\n";
-            break;
-    }
-    std::cout << "\n";
+void drawHangman(int attempts) {
+    attron(A_BOLD);
+    mvprintw(2, COLS - 15, " _____ ");
+    mvprintw(3, COLS - 15, "|     |");
+    mvprintw(4, COLS - 15, "|     %c", (attempts <= 5 ? 'O' : ' '));
+    mvprintw(5, COLS - 15, "|    %c%c%c", (attempts <= 3 ? '/' : ' '), (attempts <= 4 ? '|' : ' '), (attempts <= 2 ? '\\' : ' '));
+    mvprintw(6, COLS - 15, "|     %c", (attempts <= 1 ? '|' : ' '));
+    mvprintw(7, COLS - 15, "|    %c %c", (attempts <= 0 ? '/' : ' '), (attempts <= 0 ? '\\' : ' '));
+    mvprintw(8, COLS - 15, "|______|");
+    attroff(A_BOLD);
 }
 
 void displayGameState(const Hangman& game) {
-    int wrongGuesses = 6 - game.getRemainingAttempts();
+    clear(); // Effacer l'écran pour rafraîchir
+    std::string wordDisplay = game.getCurrentDisplayWord();
+    int centerWord = (COLS - wordDisplay.length()) / 2;
+    int centerMessage = (COLS - 20) / 2; // Pour centrer les messages
 
-    displayHangman(wrongGuesses);
+    mvprintw(1, centerMessage, "Jeu du Pendu");
+    mvprintw(10, centerWord, "%s", wordDisplay.c_str());
 
-    std::cout << "Mot: ";
-    std::string displayWord = game.getCurrentDisplayWord();
-    for (char c : displayWord) {
-        std::cout << c << " ";
+    mvprintw(12, centerMessage, "Tentatives restantes: %d", game.getRemainingAttempts());
+
+    std::string guessedLettersStr = "Lettres devinees: ";
+    for (char c : game.getGuessedLetters()) {
+        guessedLettersStr += c;
+        guessedLettersStr += ' ';
     }
-    std::cout << "\n\n";
+    mvprintw(14, centerMessage, "%s", guessedLettersStr.c_str());
 
-    std::cout << "Tentatives restantes: " << game.getRemainingAttempts() << std::endl;
-
-    auto guessedLetters = game.getGuessedLetters();
-    if (!guessedLetters.empty()) {
-        std::cout << "Lettres devinées: ";
-        for (char letter : guessedLetters) {
-            std::cout << letter << " ";
-        }
-        std::cout << std::endl;
-    }
-
-    std::cout << std::string(50, '-') << std::endl;
+    drawHangman(game.getRemainingAttempts());
+    refresh();
 }
 
-int main() {
-    std::cout << "=== JEU DU PENDU ===" << std::endl;
-    std::cout << std::string(50, '=') << std::endl;
+int main_ncurses() {
+    // Initialisation de NCurses
+    initscr();             // Démarre le mode curses
+    cbreak();              // Saisie immédiate, pas de buffer
+    noecho();              // N'affiche pas les caractères tapés
+    curs_set(0);           // Cache le curseur
+    keypad(stdscr, TRUE);  // Active les touches spéciales (comme F1, flèches)
 
-    int mode;
-    std::cout << "Choisissez le mode de jeu:" << std::endl;
-    std::cout << "1. Solo (joueur contre ordinateur)" << std::endl;
-    std::cout << "2. Deux joueurs" << std::endl;
-    std::cout << "Votre choix: ";
-    std::cin >> mode;
-
-    std::string secretWord;
-
-    if (mode == 1) {
-
-        secretWord = chooseRandomWord("../data/dico.txt");
-        std::cout << "Un mot a été choisi aléatoirement. Bonne chance !" << std::endl;
-    } else if (mode == 2) {
-
-        std::cout << "Joueur 1, entrez le mot secret: ";
-        std::cin >> secretWord;
-        clearScreen();
-        std::cout << "Le mot secret a été défini. Joueur 2, à vous de jouer !" << std::endl;
-    } else {
-        std::cout << "Mode de jeu invalide." << std::endl;
+    // Vérifier si le terminal est assez grand
+    if (LINES < 20 || COLS < 60) {
+        endwin();
+        std::cerr << "Le terminal est trop petit! Minimum 20 lignes x 60 colonnes." << std::endl;
         return 1;
     }
 
-    if (secretWord.empty()) {
-        std::cout << "Erreur: Le mot secret ne peut pas être vide." << std::endl;
+    int choice_mode;
+    std::string secretWord;
+
+    // --- Menu de sélection du mode ---
+    while(true) {
+        clear();
+        mvprintw(LINES / 2 - 2, (COLS - 25) / 2, "Choisissez le mode de jeu:");
+        mvprintw(LINES / 2, (COLS - 25) / 2, "1. Solo (joueur vs ordi)");
+        mvprintw(LINES / 2 + 1, (COLS - 25) / 2, "2. Deux joueurs");
+        mvprintw(LINES / 2 + 3, (COLS - 25) / 2, "Votre choix: ");
+        refresh();
+
+        char input = getch();
+        if (input == '1') {
+            choice_mode = 1;
+            break;
+        } else if (input == '2') {
+            choice_mode = 2;
+            break;
+        }
+    }
+
+    if (choice_mode == 1) {
+        secretWord = chooseRandomWord("dico.txt");
+    } else { // mode 2
+        echo(); // Réactiver l'écho pour la saisie du mot
+        curs_set(1); // Afficher le curseur
+        clear();
+        mvprintw(LINES / 2 - 1, (COLS - 30) / 2, "Joueur 1, entrez le mot secret:");
+        mvprintw(LINES / 2, (COLS - 30) / 2, "(min 3 lettres, pas de caractères spéciaux)");
+        mvprintw(LINES / 2 + 2, (COLS - 20) / 2, "Mot: ");
+        refresh();
+        
+        char wordBuffer[256];
+        getnstr(wordBuffer, sizeof(wordBuffer) - 1);
+        secretWord = std::string(wordBuffer);
+        
+        noecho(); // Désactiver l'écho à nouveau
+        curs_set(0); // Cacher le curseur
+    }
+
+    if (secretWord.empty() || secretWord.length() < 3) {
+        mvprintw(LINES / 2, (COLS - 30) / 2, "Mot invalide. Fin du jeu.");
+        refresh();
+        getch();
+        endwin();
         return 1;
     }
 
     Hangman game(secretWord);
-    char letter;
-
-    std::cout << std::string(50, '=') << std::endl;
-    std::cout << "Le jeu commence ! Vous avez 6 tentatives." << std::endl;
 
     while (!game.isGameOver()) {
         displayGameState(game);
+        mvprintw(LINES - 2, (COLS - 20) / 2, "Devinez une lettre: ");
+        refresh();
 
-        std::cout << "Entrez une lettre: ";
-        std::cin >> letter;
-
-        if (!std::isalpha(letter)) {
-            std::cout << "Veuillez entrer une lettre valide." << std::endl;
-            continue;
-        }
-
-        bool letterFound = game.guessLetter(letter);
-
-        std::cout << std::endl;
-
-        if (letterFound) {
-            std::cout << "✓ Bonne lettre !" << std::endl;
+        char guess = getch();
+        if (isalpha(guess)) { // S'assurer que c'est une lettre
+            game.guessLetter(guess);
         } else {
-            std::cout << "✗ Lettre incorrecte..." << std::endl;
+            mvprintw(LINES - 1, (COLS - 30) / 2, "Veuillez entrer une lettre valide.");
+            refresh();
+            napms(1000); // Pause 1 seconde
         }
-
-        std::cout << std::endl;
     }
 
-    displayGameState(game);
-
-    std::cout << std::string(50, '=') << std::endl;
-
-    if (game.hasWon()) {
-        std::cout << R"(\o/ FÉLICITATIONS ! Vous avez trouvé le mot : )" << secretWord << std::endl;
+    displayGameState(game); // Afficher l'état final
+    if (game.isWordGuessed()) {
+        mvprintw(LINES - 4, (COLS - 30) / 2, "FELICITATIONS ! Vous avez trouvé le mot.");
     } else {
-        std::cout << "X PENDU ! Le mot était : " << secretWord << std::endl;
+        mvprintw(LINES - 4, (COLS - 40) / 2, "DOMMAGE, vous avez été pendu. Le mot était: %s", game.getSecretWord().c_str());
     }
+    mvprintw(LINES - 2, (COLS - 20) / 2, "Appuyez sur une touche pour quitter.");
+    refresh();
+    getch(); // Attendre une touche avant de quitter
 
-    std::cout << std::string(50, '=') << std::endl;
-
+    endwin(); // Termine le mode curses
     return 0;
+}
+
+int main() {
+    return main_ncurses();
 }
