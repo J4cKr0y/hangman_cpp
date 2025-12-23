@@ -1,0 +1,2 @@
+/usr/bin/ar qc libhangman_lib.a CMakeFiles/hangman_lib.dir/hangman.cpp.o
+/usr/bin/ranlib libhangman_lib.a
