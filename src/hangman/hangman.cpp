@@ -1,4 +1,4 @@
-#include "hangman/hangman.h"
+﻿#include "hangman/hangman.h"
 #include <algorithm>
 #include <cctype>
 
@@ -6,7 +6,7 @@ Hangman::Hangman(const std::string& secretWord) : m_secretWord(secretWord), m_re
     m_guessedWord = std::string(m_secretWord.length(), '_');
     std::transform(m_secretWord.begin(), m_secretWord.end(), m_secretWord.begin(), ::tolower);
 }
-
+std::string Hangman::getSecretWord() const { return m_secretWord; }
 bool Hangman::guessLetter(char letter) {
     letter = std::tolower(letter);
     if (m_guessedLetters.find(letter) != m_guessedLetters.end()) {
@@ -46,3 +46,4 @@ bool Hangman::hasWon() const {
 bool Hangman::hasLost() const {
     return m_remainingAttempts <= 0 && !isWordGuessed();
 }
+

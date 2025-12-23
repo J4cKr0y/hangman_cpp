@@ -1,4 +1,4 @@
-#ifndef HANGMAN_H
+﻿#ifndef HANGMAN_H
 #define HANGMAN_H
 
 #include <string>
@@ -7,7 +7,7 @@
 class Hangman {
 public:
     Hangman(const std::string& secretWord);
-
+    std::string getSecretWord() const;
     bool guessLetter(char letter);
     bool isGameOver() const;
     bool isWordGuessed() const;
